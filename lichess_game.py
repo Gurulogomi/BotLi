@@ -76,7 +76,7 @@ class Lichess_Game:
             offer_draw = self._is_drawish()
             resign = self._is_resignable()
 
-        print(message)
+        # print(message)
         self.last_message = message
         self.board.push(move)
         return move.uci(), offer_draw, resign

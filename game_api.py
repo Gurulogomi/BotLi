@@ -1,5 +1,6 @@
 import json
 import multiprocessing
+from timeit import default_timer as timer
 
 from api import API
 from chatter import Chat_Message, Chatter
@@ -21,6 +22,8 @@ class Game_api:
         game_queue_process = multiprocessing.Process(target=self._watch_game_stream, args=(game_queue,))
         game_queue_process.start()
 
+        move_count = 1
+
         while True:
             event = game_queue.get()
 
@@ -36,7 +39,10 @@ class Game_api:
                     if resign:
                         self.api.resign_game(self.game_id)
                     else:
+                        t = timer()
                         self.api.send_move(self.game_id, uci_move, offer_draw)
+                        print(move_count, timer() - t)
+                        move_count += 1
             elif event['type'] == 'gameState':
                 updated = self.lichess_game.update(event)
 
@@ -48,10 +54,13 @@ class Game_api:
                     if resign:
                         self.api.resign_game(self.game_id)
                     else:
+                        t = timer()
                         self.api.send_move(self.game_id, uci_move, offer_draw)
+                        print(move_count, timer() - t)
+                        move_count += 1
             elif event['type'] == 'chatLine':
                 chat_message = Chat_Message(event)
-                print(f'{chat_message.username} ({chat_message.room}): {chat_message.text}')
+                # print(f'{chat_message.username} ({chat_message.room}): {chat_message.text}')
 
                 if chat_message.text.startswith('!'):
                     command = chat_message.text[1:].lower()
